@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Bassins d'Eau</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        h1 {
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 250px;
+        }
+        .controls label {
+            font-size: 16px;
+            color: #333;
+        }
+        .controls input {
+            padding: 8px;
+            font-size: 16px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        .controls button {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .controls button:hover {
+            background-color: #45a049;
+        }
+        .grid {
+            display: grid;
+            gap: 1px;
+            margin-top: 20px;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background-color: white;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .bassin {
+            background-color: darkgreen !important;
+        }
+        .irrigation {
+            background-color: lightgreen !important;
+        }
+        .double-irrigation {
+            background-color: orange !important;
+        }
+        .controls p {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Création d'un champ</h1>
+    <div class="container">
+        <div class="controls">
+            <label for="longueur">Longueur :</label>
+            <input type="number" id="longueur" min="1" required>
+            <label for="largeur">Largeur :</label>
+            <input type="number" id="largeur" min="1" required>
+            <button onclick="genererGrille()">Créer le champ</button>
+            <button onclick="pavageDamier()">Pavage en damier</button>
+            <button onclick="optimiserChamp()">Optimiser ce champ</button>
+        </div>
+        <div id="champ" class="grid"></div>
+    </div>
+    <p>Nombre de bassins d'eau : <span id="bassinCount">0</span></p>
+    <p>Nombre de cases touchées : <span id="touchCount">0</span></p>
+
+    <script>
+        function genererGrille() {
+            const longueur = parseInt(document.getElementById('longueur').value);
+            const largeur = parseInt(document.getElementById('largeur').value);
+            const champ = document.getElementById('champ');
+            
+            if (isNaN(longueur) || isNaN(largeur) || longueur <= 0 || largeur <= 0) {
+                alert("Veuillez entrer des dimensions valides.");
+                return;
+            }
+
+            champ.style.gridTemplateColumns = `repeat(${largeur}, 30px)`;
+            champ.innerHTML = '';
+            
+            for (let i = 0; i < longueur; i++) {
+                for (let j = 0; j < largeur; j++) {
+                    let cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', () => toggleBassin(i, j));
+                    champ.appendChild(cell);
+                }
+            }
+            updateCounts();
+        }
+
+        function pavageDamier() {
+            genererGrille();
+            const longueur = parseInt(document.getElementById('longueur').value);
+            const largeur = parseInt(document.getElementById('largeur').value);
+
+            for (let i = 0; i < longueur; i++) {
+                for (let j = 0; j < largeur; j++) {
+                    if ((i + j) % 2 === 0) {
+                        let cell = document.querySelector(`[data-row='${i}'][data-col='${j}']`);
+                        cell.classList.add('bassin');
+                    }
+                }
+            }
+            updateGrid();
+            updateCounts(); // Appel à updateCounts pour rafraîchir les compteurs
+        }
+
+        function toggleBassin(x, y) {
+            const cell = document.querySelector(`[data-row='${x}'][data-col='${y}']`);
+            if (cell.classList.contains('bassin')) {
+                cell.classList.remove('bassin');
+                updateGrid();
+            } else {
+                cell.classList.add('bassin');
+                updateGrid();
+            }
+            updateCounts();
+        }
+
+        function updateGrid() {
+            document.querySelectorAll('.irrigation, .double-irrigation').forEach(cell => {
+                cell.classList.remove('irrigation', 'double-irrigation');
+            });
+
+            let bassinPositions = [];
+            document.querySelectorAll('.bassin').forEach(cell => {
+                let x = parseInt(cell.dataset.row);
+                let y = parseInt(cell.dataset.col);
+                bassinPositions.push([x, y]);
+            });
+
+            let touchMap = new Map();
+            bassinPositions.forEach(([x, y]) => {
+                [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(([dx, dy]) => {
+                    const adjacent = document.querySelector(`[data-row='${dx}'][data-col='${dy}']`);
+                    if (adjacent && !adjacent.classList.contains('bassin')) {
+                        let key = `${dx},${dy}`;
+                        touchMap.set(key, (touchMap.get(key) || 0) + 1);
+                    }
+                });
+            });
+
+            touchMap.forEach((count, key) => {
+                let [dx, dy] = key.split(',').map(Number);
+                let adjacent = document.querySelector(`[data-row='${dx}'][data-col='${dy}']`);
+                if (adjacent) {
+                    if (count > 1) {
+                        adjacent.classList.add('double-irrigation');
+                    } else {
+                        adjacent.classList.add('irrigation');
+                    }
+                }
+            });
+        }
+
+        function updateCounts() {
+            const bassinCount = document.querySelectorAll('.bassin').length;
+            const touchCount = document.querySelectorAll('.double-irrigation').length;
+            document.getElementById('bassinCount').textContent = bassinCount;
+            document.getElementById('touchCount').textContent = touchCount;
+        }
+
+        function optimiserChamp() {
+            // Fonction à implémenter
+        }
+    </script>
+</body>
+</html>
