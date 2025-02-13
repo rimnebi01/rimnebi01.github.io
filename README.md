@@ -1,4 +1,4 @@
-title: Creating your first commit
-redirect_from:
-  - /Plan-V2.html
-    
+---
+layout: forward
+target: https://rimnebi01.github.io/Plan-V2.html
+---
