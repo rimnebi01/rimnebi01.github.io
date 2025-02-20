@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Bassins d'Eau</title>
-  <style>
+    <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f7f6;
@@ -51,7 +50,7 @@
         .controls button {
             padding: 12px;
             font-size: 16px;
-            background-color: #4CAF50;
+            background-color: #72D572;
             color: white;
             border: none;
             border-radius: 5px;
@@ -91,6 +90,7 @@
             color: #333;
         }
     </style>
+
 </head>
 <body>
     <h1>Création d'un champ</h1>
@@ -103,12 +103,13 @@
             <button onclick="genererGrille()">Créer le champ</button>
             <button onclick="pavageDamier()">Pavage en damier</button>
             <button onclick="optimiserChamp()">Optimiser ce champ</button>
+            <button onclick="calculerMaxBassins()">Calculer max bassins</button>
         </div>
         <div id="champ" class="grid"></div>
     </div>
     <p>Nombre de bassins d'eau : <span id="bassinCount">0</span></p>
     <p>Nombre de cases touchées : <span id="touchCount">0</span></p>
-
+    
     <script>
         function genererGrille() {
             const longueur = parseInt(document.getElementById('longueur').value);
@@ -208,9 +209,21 @@
             document.getElementById('touchCount').textContent = touchCount;
         }
 
+        function calculerMaxBassins() {
+            const longueur = parseInt(document.getElementById('longueur').value);
+            const largeur = parseInt(document.getElementById('largeur').value);
+            if (isNaN(longueur) || isNaN(largeur) || longueur <= 0 || largeur <= 0) {
+                alert("Veuillez entrer des dimensions valides.");
+                return;
+            }
+            const maxBassins = Math.ceil((longueur * largeur) / 4);
+            alert("Nombre maximal de bassins d'eau : " + maxBassins);
+        }
+
         function optimiserChamp() {
             // Fonction à implémenter
         }
     </script>
 </body>
 </html>
+
