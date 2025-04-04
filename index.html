@@ -199,20 +199,20 @@
             });
         }
 
-        function updateCounts() {
-        const bassinCount = document.querySelectorAll('.bassin').length;
-        const touchCount = document.querySelectorAll('.double-irrigation').length;
-        const expectedIrrigation = bassinCount * 4;
-        const actualIrrigation = document.querySelectorAll('.irrigation').length;
-        const doubleIrrigationCount = document.querySelectorAll('.double-irrigation').length;
-        
-        // Calcul des pertes en soustrayant 2 pour chaque case orange
-        let perteCount = Math.max(0, expectedIrrigation - actualIrrigation - (doubleIrrigationCount * 2));
+ function updateCounts() {
+    const bassinCount = document.querySelectorAll('.bassin').length;
+    const touchCount = document.querySelectorAll('.double-irrigation').length; // Cases touchées (orange)
+    const irrigationCount = document.querySelectorAll('.irrigation').length; // Cases irriguées (vert clair)
 
-        document.getElementById('bassinCount').textContent = bassinCount;
-        document.getElementById('touchCount').textContent = touchCount;
-        document.getElementById('perteCount').textContent = perteCount;
-    }
+    // Calcul des pertes
+    let perteCount = (bassinCount * 4) - irrigationCount - (touchCount * 2);
+    if (perteCount < 0) perteCount = 0; // Pour éviter les valeurs négatives
+
+    // Mise à jour des compteurs affichés
+    document.getElementById('bassinCount').textContent = bassinCount;
+    document.getElementById('touchCount').textContent = touchCount;
+    document.getElementById('perteCount').textContent = perteCount;
+}
 
     function calculerMaxBassins() {
             const longueur = parseInt(document.getElementById('longueur').value);
